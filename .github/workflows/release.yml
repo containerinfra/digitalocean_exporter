@@ -4,17 +4,14 @@ on:
     tags:
       - '*'
 
-env:
-  IMAGE_NAME: ${{ github.event.repository.name }}
-  VERSION: '7.3.0'
-  SHA256: 'e5b209a89766f3cceea058448fbc03ac45d12dd2ebb3df1115a7c9a7956ee0e5'
-
 jobs:
-  build-push:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Set up cosign
         uses: sigstore/cosign-installer@main
 
@@ -52,4 +49,4 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
-          args: release --skip-announce --skip-validate --snapshot --skip-validate --rm-dist
+          args: release --rm-dist

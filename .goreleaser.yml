@@ -22,7 +22,7 @@ dockers:
     goarch: amd64
     use: buildx
     image_templates:
-    - gcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
 
     build_flag_templates:
     - --platform=linux/amd64
@@ -37,7 +37,7 @@ dockers:
     skip_push: 'true'
     use: buildx
     image_templates:
-    - gcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
 
     build_flag_templates:
     - --platform=linux/arm64

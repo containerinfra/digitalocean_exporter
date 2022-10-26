@@ -22,7 +22,6 @@ dockers:
     goarch: amd64
     use: buildx
     image_templates:
-    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
     - gcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
 
     build_flag_templates:
@@ -38,7 +37,6 @@ dockers:
     skip_push: 'true'
     use: buildx
     image_templates:
-    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
     - gcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
 
     build_flag_templates:
@@ -59,16 +57,6 @@ docker_manifests:
     image_templates:
     - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
     - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
-
-  # Docker Hub
-  - name_template: docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}
-    image_templates:
-    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
-    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
-  - name_template: docker.io/containerinfra/{{ .ProjectName }}:latest
-    image_templates:
-    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
-    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
 
 # docker_signs:
 #   - 

@@ -26,3 +26,6 @@ _testmain.go
 /.env
 /digitalocean_exporter
 /dist/
+
+
+bin/

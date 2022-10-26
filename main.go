@@ -9,22 +9,23 @@ import (
 
 	arg "github.com/alexflint/go-arg"
 	"github.com/digitalocean/godo"
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/joho/godotenv"
 	"github.com/metalmatze/digitalocean_exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/oauth2"
 )
 
 var (
-	// Version of digitalocean_exporter.
-	Version string
-	// Revision or Commit this binary was built from.
-	Revision string
-	// BuildDate this binary was built.
-	BuildDate string
+	// version of digitalocean_exporter.
+	version = "unknown"
+	// commit or commit this binary was built from.
+	commit = "unknown"
+	// date this binary was built.
+	date = "unknown"
 	// GoVersion running this binary.
 	GoVersion = runtime.Version()
 	// StartTime has the time this was started.
@@ -75,9 +76,9 @@ func main() {
 
 	level.Info(logger).Log(
 		"msg", "starting digitalocean_exporter",
-		"version", Version,
-		"revision", Revision,
-		"buildDate", BuildDate,
+		"version", version,
+		"revision", commit,
+		"buildDate", date,
 		"goVersion", GoVersion,
 	)
 
@@ -98,10 +99,10 @@ func main() {
 	}, []string{"collector"})
 
 	r := prometheus.NewRegistry()
-	r.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
-	r.MustRegister(prometheus.NewGoCollector())
+	r.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	r.MustRegister(collectors.NewGoCollector())
 	r.MustRegister(errors)
-	r.MustRegister(collector.NewExporterCollector(logger, Version, Revision, BuildDate, GoVersion, StartTime))
+	r.MustRegister(collector.NewExporterCollector(logger, version, commit, date, GoVersion, StartTime))
 	r.MustRegister(collector.NewAccountCollector(logger, errors, client, timeout))
 	r.MustRegister(collector.NewAppCollector(logger, errors, client, timeout))
 	r.MustRegister(collector.NewBalanceCollector(logger, errors, client, timeout))

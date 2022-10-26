@@ -1,55 +1,43 @@
-EXECUTABLE ?= digitalocean_exporter
-IMAGE ?= metalmatze/$(EXECUTABLE)
-GO := CGO_ENABLED=0 go
-DATE := $(shell date -u '+%FT%T%z')
+BINARY = digitalocean_exporter
+GOARCH = amd64
 
-LDFLAGS += -X main.Version=$(DRONE_TAG)
-LDFLAGS += -X main.Revision=$(DRONE_COMMIT)
-LDFLAGS += -X "main.BuildDate=$(DATE)"
-LDFLAGS += -extldflags '-static'
+IMAGE 		?=ghcr.io/containerinfra/digitalocean-exporter
+VERSION		?=local
+COMMIT		?=$(shell git rev-parse HEAD)
+BUILD_DATE	?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+BUILD_BY 	?=make
 
-PACKAGES = $(shell go list ./...)
+LDFLAGS = -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${BUILD_DATE} -X main.builtBy="${BUILD_BY}"
 
-.PHONY: all
-all: build
+compile: build
 
-.PHONY: clean
-clean:
-	$(GO) clean -i ./...
-	rm -rf dist/
+linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build  -ldflags "${LDFLAGS}" -o ./bin/${BINARY}_linux_${GOARCH}/${BINARY} . ;
 
-.PHONY: fmt
-fmt:
-	$(GO) fmt $(PACKAGES)
+darwin:
+	CGO_ENABLED=0 GOOS=darwin GOARCH=${GOARCH} go build -ldflags "${LDFLAGS}" -o ./bin/${BINARY}_darwin_${GOARCH}/${BINARY} . ;
 
-.PHONY: vet
-vet:
-	$(GO) vet $(PACKAGES)
+build:
+	CGO_ENABLED=0 go build -ldflags "${LDFLAGS}" -o ./bin/${BINARY} . ;
 
-.PHONY: lint
-lint:
-	@which golint > /dev/null; if [ $$? -ne 0 ]; then \
-		$(GO) get -u golang.org/x/lint/golint; \
-	fi
-	for PKG in $(PACKAGES); do golint -set_exit_status $$PKG || exit 1; done;
-
-.PHONY: test
 test:
-	@for PKG in $(PACKAGES); do $(GO) test -cover $$PKG || exit 1; done;
+	go test -v ./... -cover
 
-$(EXECUTABLE): $(wildcard *.go)
-	$(GO) build -v -ldflags '-w $(LDFLAGS)'
+fmt:
+	go fmt $$(go list ./... | grep -v /vendor/);
 
-.PHONY: build
-build: $(EXECUTABLE)
+lint:
+	golint $$(go list ./... | grep -v /vendor/)
 
-.PHONY: install
-install:
-	$(GO) install -v -ldflags '-w $(LDFLAGS)'
+vet:
+	go vet $$(go list ./... | grep -v /vendor/) ;
 
-.PHONY: release
-release:
-	@which gox > /dev/null; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/mitchellh/gox; \
-	fi
-	CGO_ENABLED=0 gox -verbose -ldflags '-w $(LDFLAGS)' -osarch '!darwin/386' -output="dist/$(EXECUTABLE)-${DRONE_TAG}-{{.OS}}-{{.Arch}}"
+
+docker: linux
+	docker build -t ${IMAGE}:${VERSION}${BRANCH} .
+
+review:
+	reviewdog -diff="git diff FETCH_HEAD" -tee
+
+goreleaser:
+	goreleaser release --skip-publish --skip-announce --skip-validate --snapshot --skip-validate --rm-dist

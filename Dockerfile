@@ -1,7 +1,6 @@
-FROM alpine:latest
-RUN apk add --update ca-certificates
+FROM gcr.io/distroless/static
 
-ADD ./digitalocean_exporter /usr/bin/digitalocean_exporter
+COPY digitalocean_exporter /usr/bin/digitalocean_exporter
 
 EXPOSE 9212
 

@@ -1,0 +1,80 @@
+release:
+  ids: []
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+
+    goarch:
+      - amd64
+      - arm64
+      - arm
+
+before:
+  hooks:
+    - go mod tidy
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    use: buildx
+    image_templates:
+    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+    - gcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+
+    build_flag_templates:
+    - --platform=linux/amd64
+    - --label=org.opencontainers.image.created={{.Date}}
+    - --label=org.opencontainers.image.title={{.ProjectName}}
+    - --label=org.opencontainers.image.revision={{.FullCommit}}
+    - --label=org.opencontainers.image.source=https://github.com/containerinfra/{{ .ProjectName }}
+    - --label=org.opencontainers.image.version={{.Version}}
+  - goos: linux
+    goarch: arm64
+    # Defaults to false.
+    skip_push: 'true'
+    use: buildx
+    image_templates:
+    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
+    - gcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
+
+    build_flag_templates:
+    - --platform=linux/arm64
+    - --label=org.opencontainers.image.created={{.Date}}
+    - --label=org.opencontainers.image.title={{.ProjectName}}
+    - --label=org.opencontainers.image.revision={{.FullCommit}}
+    - --label=org.opencontainers.image.source=https://github.com/containerinfra/{{ .ProjectName }}
+    - --label=org.opencontainers.image.version={{.Version}}
+
+docker_manifests:
+  # Github container registry
+  - name_template: ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}
+    image_templates:
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
+  - name_template: ghcr.io/containerinfra/{{ .ProjectName }}:latest
+    image_templates:
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
+
+  # Docker Hub
+  - name_template: docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}
+    image_templates:
+    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
+  - name_template: docker.io/containerinfra/{{ .ProjectName }}:latest
+    image_templates:
+    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
+    - docker.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
+
+# docker_signs:
+#   - 
+#     stdin: '{{ .Env.COSIGN_PASSWORD }}'
+
+changelog:
+  use: git
+
+dist: ./bin

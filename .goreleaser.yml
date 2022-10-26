@@ -33,8 +33,6 @@ dockers:
     - --label=org.opencontainers.image.version={{.Version}}
   - goos: linux
     goarch: arm64
-    # Defaults to false.
-    skip_push: 'true'
     use: buildx
     image_templates:
     - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
@@ -52,11 +50,11 @@ docker_manifests:
   - name_template: ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}
     image_templates:
     - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
-    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
   - name_template: ghcr.io/containerinfra/{{ .ProjectName }}:latest
     image_templates:
     - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-amd64
-    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64v8
+    - ghcr.io/containerinfra/{{ .ProjectName }}:{{ .Version }}-arm64
 
 # docker_signs:
 #   - 
